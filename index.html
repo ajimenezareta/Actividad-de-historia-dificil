@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agentes 2030 · El gran archivo del tiempo</title>
+<style>
+:root{
+  --bg:#e8dfca;
+  --paper:#fffaf1;
+  --ink:#2c251d;
+  --wood:#6f492b;
+  --wood-2:#a06e42;
+  --gold:#c69a3f;
+  --green:#4f7a57;
+  --red:#a14338;
+  --blue:#356780;
+  --muted:#efe5d3;
+  --line:#ccb18a;
+  --shadow:0 14px 34px rgba(52,38,24,.18);
+  --radius:18px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  min-height:100vh;
+  color:var(--ink);
+  font-family:Georgia,"Times New Roman",serif;
+  background:
+    linear-gradient(rgba(255,255,255,.14),rgba(255,255,255,.14)),
+    repeating-linear-gradient(0deg,#e7deca 0,#e7deca 24px,#e2d7c0 25px);
+}
+button,select,textarea,input{font:inherit}
+button{cursor:pointer}
+button:disabled{cursor:not-allowed;opacity:.65}
+.app{width:min(1260px,96%);margin:auto;padding:18px 0 42px}
+.screen{display:none}
+.screen.active{display:block;animation:fade .28s ease}
+@keyframes fade{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+.panel{
+  background:rgba(255,250,241,.97);
+  border:2px solid rgba(111,73,43,.17);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+}
+.hero{padding:34px;text-align:center}
+h1,h2,h3{color:#51321c;margin-top:0}
+h1{font-size:clamp(2rem,4vw,3.35rem);margin-bottom:10px}
+.lead{max-width:900px;margin:0 auto 20px;line-height:1.58;font-size:1.06rem}
+.primary,.secondary,.danger,.small,.category-btn,.answer-btn{
+  border:none;border-radius:13px;padding:13px 18px;font-weight:700;transition:.2s ease;
+}
+.primary{color:white;background:linear-gradient(135deg,var(--wood),var(--wood-2));box-shadow:0 6px 15px rgba(111,73,43,.24)}
+.secondary{background:#f0e6d5;color:#49311f;border:1px solid var(--line)}
+.danger{background:#8e342f;color:white}
+.small{padding:8px 11px;background:#efe5d3;color:#46301f;border:1px solid var(--line)}
+button:hover{transform:translateY(-2px)}
+button:focus-visible,select:focus-visible,textarea:focus-visible,input:focus-visible,.draggable:focus-visible,.dropzone:focus-visible{
+  outline:4px solid #2d79b9;outline-offset:2px
+}
+.topbar{
+  display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center;
+  padding:15px 18px;margin-bottom:16px;position:sticky;top:8px;z-index:10;
+}
+.stats{display:flex;gap:10px;flex-wrap:wrap}
+.badge{background:#f0e5d2;border:1px solid #d0b48d;padding:8px 11px;border-radius:11px;font-weight:700}
+.progress-wrap{grid-column:1/-1}
+.progress-head{display:flex;justify-content:space-between;font-size:.92rem;font-weight:700;margin-bottom:5px}
+.progress-track{height:14px;background:#ded1ba;border-radius:999px;overflow:hidden;border:1px solid #bea27a}
+.progress-bar{height:100%;width:0;background:linear-gradient(90deg,var(--green),var(--gold));transition:width .35s}
+.clock{
+  max-width:720px;margin:18px auto;display:grid;grid-template-columns:repeat(8,1fr);gap:8px
+}
+.clock-piece{
+  min-height:72px;border:2px solid #c9b18c;border-radius:12px;background:#e9dfcd;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;padding:7px;
+  font-size:.78rem;font-weight:700;color:#74634f;
+}
+.clock-piece span{font-size:1.55rem}
+.clock-piece.active{background:linear-gradient(135deg,#f3d675,#d79c37);border-color:#936315;color:#4a3108;box-shadow:0 5px 12px rgba(150,99,22,.2)}
+.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:15px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.main{padding:24px}
+.phase-title{text-align:center;margin-bottom:18px}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:16px;align-items:start}
+.side{padding:18px;position:sticky;top:116px}
+.card{
+  background:#fffdf8;border:1px solid #d6c1a1;border-radius:14px;padding:16px
+}
+.source-card{
+  max-width:760px;margin:0 auto 20px;padding:24px;text-align:center;
+  background:linear-gradient(rgba(255,255,255,.85),rgba(255,255,255,.85)),radial-gradient(circle at 28% 12%,#e8cf9e 0 2px,transparent 3px);
+  border:3px dashed #a87a43;border-radius:18px;user-select:none
+}
+.source-card.dragging{opacity:.55;transform:scale(.98)}
+.source-icon{font-size:4rem;margin-bottom:8px}
+.source-card h2{margin-bottom:8px}
+.source-card p{max-width:640px;margin:0 auto;line-height:1.5}
+.destinations{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.dropzone{
+  min-height:132px;border:2px solid #b99d76;border-radius:15px;background:#f7f0e4;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+  padding:12px;transition:.2s ease
+}
+.dropzone:hover,.dropzone.drag-over{background:#eadcc4;border-color:#76502d;transform:translateY(-2px)}
+.dropzone .icon{font-size:2rem;margin-bottom:6px}
+.dropzone small{display:block;margin-top:5px;line-height:1.25}
+.feedback{padding:13px;border-radius:12px;margin-top:15px;font-weight:700;line-height:1.45}
+.feedback.neutral{background:#efe5d5;border:1px solid #d2bc9b}
+.feedback.ok{background:#e2efe5;border:1px solid #91c09c;color:#225c35}
+.feedback.bad{background:#f5e2df;border:1px solid #d29a94;color:#792d27}
+.phase-nav{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:18px}
+.hidden{display:none!important}
+.support-box{background:#edf2e8;border:2px solid #99b089;border-radius:14px;padding:14px;margin:14px 0}
+.archive-list{display:grid;gap:8px;max-height:450px;overflow:auto}
+.archive-item{padding:9px;border-radius:10px;background:#f0e5d2;border:1px solid #d6c19f;font-size:.9rem}
+.archive-item.done{background:#e2eee5;border-color:#99c1a2}
+.timeline-board{display:grid;gap:10px}
+.timeline-item{
+  display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;
+  background:#fffdf8;border:2px solid #c9ad85;border-radius:14px;padding:12px
+}
+.timeline-item.dragging{opacity:.55}
+.drag-handle{font-size:1.5rem;cursor:grab}
+.rep-pool{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:18px}
+.rep-card{
+  border:2px solid #cdb18b;border-radius:12px;background:white;padding:10px;text-align:center;font-weight:700
+}
+.rep-card.assigned{opacity:.45}
+.rep-zones{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}
+.rep-zone{
+  min-height:130px;border:2px dashed #aa8a60;border-radius:14px;background:#faf3e8;padding:10px
+}
+.rep-zone h3{font-size:1rem;margin-bottom:8px}
+.rep-slot{min-height:36px;background:#eee3cf;border-radius:9px;margin:5px 0;padding:7px;font-size:.86rem}
+.intruder-group{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:16px 0}
+.intruder-card{
+  min-height:115px;border:2px solid #cdb18b;border-radius:13px;background:#fff;padding:12px;
+  display:flex;align-items:center;justify-content:center;text-align:center;font-weight:700
+}
+.intruder-box{
+  max-width:480px;margin:16px auto;min-height:110px;border:3px dashed var(--red);border-radius:16px;
+  background:#f7ebe8;display:flex;align-items:center;justify-content:center;text-align:center;padding:16px;font-weight:700
+}
+.change-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.change-zone{
+  min-height:140px;border:2px solid #cbb089;border-radius:14px;background:#faf3e8;padding:12px;
+  display:flex;align-items:center;justify-content:center;text-align:center
+}
+.review-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.modal{
+  position:fixed;inset:0;background:rgba(27,19,11,.73);display:none;align-items:center;justify-content:center;
+  padding:18px;z-index:30
+}
+.modal.active{display:flex}
+.modal-card{
+  width:min(850px,100%);max-height:90vh;overflow:auto;background:var(--paper);
+  border-radius:17px;padding:24px;border:2px solid #a77942;box-shadow:0 20px 55px rgba(0,0,0,.35)
+}
+.insignias{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.insignia{padding:7px 9px;border-radius:999px;background:#e8dfcf;border:1px solid #cbb28c;font-size:.85rem;font-weight:700}
+.insignia.active{background:#e4eddc;border-color:#8da97d}
+.final-report{background:white;border:2px solid #b99a71;border-radius:14px;padding:22px;line-height:1.55}
+.final-report h2{text-align:center}
+textarea{width:100%;min-height:105px;border:2px solid var(--line);border-radius:11px;padding:10px;resize:vertical}
+select{width:100%;border:2px solid var(--line);border-radius:11px;padding:10px;background:white}
+@media(max-width:980px){
+  .destinations,.grid4,.rep-pool,.rep-zones,.change-grid{grid-template-columns:repeat(2,1fr)}
+  .layout{grid-template-columns:1fr}
+  .side{position:static}
+  .clock{grid-template-columns:repeat(4,1fr)}
+}
+@media(max-width:620px){
+  .hero,.main,.modal-card{padding:19px}
+  .topbar{grid-template-columns:1fr;position:static}
+  .grid2,.destinations,.grid4,.rep-pool,.rep-zones,.change-grid,.review-grid,.intruder-group{grid-template-columns:1fr}
+  .clock{grid-template-columns:repeat(2,1fr)}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+}
+@media print{
+  body{background:white}
+  .no-print,.topbar,.phase-nav,footer{display:none!important}
+  .screen{display:none!important}
+  #finalScreen{display:block!important}
+  #finalScreen .panel{box-shadow:none;border:none}
+}
+footer{text-align:center;margin-top:18px;color:#5b4938;font-size:.9rem}
+</style>
+</head>
+<body>
+<div class="app">
+
+<section id="startScreen" class="screen active">
+  <div class="panel hero">
+    <div style="font-size:4.5rem" aria-hidden="true">🕰️🗂️🌍</div>
+    <h1>Agentes 2030</h1>
+    <h2>El gran archivo del tiempo</h2>
+    <p class="lead">
+      ¡Alerta, Agentes 2030! Un fallo temporal ha mezclado millones de años de Historia.
+      Objetos, descubrimientos, formas de vida, construcciones y acontecimientos han quedado fuera de su época.
+      Vuestra misión consiste en clasificarlos correctamente, ordenar las etapas y reconstruir la línea del tiempo de la humanidad.
+    </p>
+    <div id="startClock" class="clock"></div>
+    <div class="card" style="max-width:850px;margin:20px auto;text-align:left">
+      <p><strong>La Prehistoria</strong> comprende el periodo anterior a la escritura. <strong>La Historia</strong> comienza con la aparición de la escritura.</p>
+      <p>Las etapas son divisiones convencionales que ayudan a organizar el pasado. Los cambios fueron progresivos y no ocurrieron al mismo tiempo en todos los territorios.</p>
+    </div>
+    <div class="phase-nav">
+      <button id="newBtn" class="primary">Comenzar misión</button>
+      <button id="continueBtn" class="secondary hidden">Continuar misión</button>
+      <button id="howBtn" class="secondary">Cómo se juega</button>
+      <button id="supportStartBtn" class="secondary">🧩 Activar modo de apoyo</button>
+      <button id="deleteBtn" class="danger hidden">Borrar partida guardada</button>
+    </div>
+  </div>
+</section>
+
+<header id="topbar" class="panel topbar hidden no-print">
+  <div class="stats">
+    <span class="badge">Nivel: <strong id="levelLabel">1</strong>/5</span>
+    <span class="badge">Puntuación: <strong id="scoreLabel">0</strong>/100</span>
+    <span class="badge">Clasificadas: <strong id="classifiedLabel">0</strong>/44</span>
+  </div>
+  <div>
+    <button id="howTopBtn" class="small">📘 Cómo se juega</button>
+    <button id="supportBtn" class="small" aria-pressed="false">🧩 Modo de apoyo</button>
+    <button id="soundBtn" class="small" aria-pressed="true">🔊 Sonido</button>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-head"><span id="progressText">Nivel 1</span><span id="progressPct">0%</span></div>
+    <div class="progress-track"><div id="progressBar" class="progress-bar"></div></div>
+    <div id="insignias" class="insignias"></div>
+  </div>
+</header>
+
+<section id="level1Screen" class="screen">
+  <div class="layout">
+    <main class="panel main">
+      <div class="phase-title">
+        <h1>Nivel 1. Las dos grandes puertas del tiempo</h1>
+        <p>Arrastra cada tarjeta hasta Prehistoria o Historia.</p>
+      </div>
+      <article id="l1Card" class="source-card draggable" draggable="true" tabindex="0">
+        <div id="l1Icon" class="source-icon"></div>
+        <h2 id="l1Name"></h2>
+        <p id="l1Description"></p>
+      </article>
+      <div id="l1Destinations" class="destinations"></div>
+      <div id="l1Support" class="support-box hidden"></div>
+      <div id="l1Feedback" class="feedback neutral">La aparición de la escritura es la referencia principal.</div>
+      <div class="phase-nav"><button id="l1NextBtn" class="primary hidden">Siguiente tarjeta</button></div>
+    </main>
+    <aside class="panel side">
+      <h2>Archivo recuperado</h2>
+      <p id="l1Counter"></p>
+      <div id="l1Archive" class="archive-list"></div>
+    </aside>
+  </div>
+</section>
+
+<section id="level2Screen" class="screen">
+  <div class="layout">
+    <main class="panel main">
+      <div class="phase-title">
+        <h1>Nivel 2. Los ocho archivos históricos</h1>
+        <p>Clasifica cada tarjeta en su etapa correspondiente.</p>
+      </div>
+      <div id="clock" class="clock"></div>
+      <article id="l2Card" class="source-card draggable" draggable="true" tabindex="0">
+        <div id="l2Icon" class="source-icon"></div>
+        <h2 id="l2Name"></h2>
+        <p id="l2Description"></p>
+      </article>
+      <div id="l2Destinations" class="destinations"></div>
+      <div id="l2Support" class="support-box hidden"></div>
+      <div id="l2Feedback" class="feedback neutral">Observa las palabras clave y piensa en la forma de vida de cada etapa.</div>
+      <div class="phase-nav"><button id="l2NextBtn" class="primary hidden">Siguiente tarjeta</button></div>
+    </main>
+    <aside class="panel side">
+      <h2>Progreso por etapas</h2>
+      <p id="l2Counter"></p>
+      <div id="stageProgress" class="archive-list"></div>
+    </aside>
+  </div>
+</section>
+
+<section id="level3Screen" class="screen">
+  <div class="panel main">
+    <div class="phase-title">
+      <h1>Nivel 3. Reconstrucción de la línea del tiempo</h1>
+      <p>Ordena las ocho etapas y después coloca dos tarjetas representativas en cada una.</p>
+    </div>
+    <div id="timelineBoard" class="timeline-board"></div>
+    <div id="timelineFeedback" class="feedback neutral">Arrastra las etapas o utiliza las flechas.</div>
+    <div class="phase-nav">
+      <button id="checkTimelineBtn" class="primary">Comprobar orden</button>
+      <button id="showRepsBtn" class="secondary hidden">Clasificar tarjetas representativas</button>
+    </div>
+    <div id="representativesBlock" class="hidden">
+      <h2>Dos huellas de cada etapa</h2>
+      <p>Arrastra las dieciséis tarjetas hasta su etapa. Cada zona debe contener dos.</p>
+      <div id="repPool" class="rep-pool"></div>
+      <div id="repZones" class="rep-zones"></div>
+      <div id="repFeedback" class="feedback neutral">Completa las ocho etapas.</div>
+      <div class="phase-nav"><button id="checkRepsBtn" class="primary">Comprobar representantes</button><button id="toLevel4Btn" class="secondary hidden">Continuar</button></div>
+    </div>
+  </div>
+</section>
+
+<section id="level4Screen" class="screen">
+  <div class="panel main">
+    <div class="phase-title">
+      <h1>Nivel 4. Los intrusos temporales</h1>
+      <p>Encuentra el anacronismo y colócalo después en su etapa correcta.</p>
+    </div>
+    <h2 id="intruderTitle"></h2>
+    <div id="intruderCards" class="intruder-group"></div>
+    <div id="intruderBox" class="intruder-box dropzone" tabindex="0">Arrastra aquí el intruso temporal</div>
+    <div id="intruderStageArea" class="hidden">
+      <h3>Ahora sitúa el intruso en su verdadera etapa</h3>
+      <div id="intruderStages" class="destinations"></div>
+    </div>
+    <div id="intruderFeedback" class="feedback neutral">Tres tarjetas pertenecen a una misma etapa; una no.</div>
+    <div class="phase-nav"><button id="nextIntruderBtn" class="primary hidden">Siguiente desafío</button></div>
+  </div>
+</section>
+
+<section id="level5Screen" class="screen">
+  <div class="panel main">
+    <div class="phase-title">
+      <h1>Nivel 5. El archivo de los grandes cambios</h1>
+      <p>Arrastra cada pareja hasta la explicación que describe su transformación.</p>
+    </div>
+    <article id="changeCard" class="source-card draggable" draggable="true" tabindex="0">
+      <div id="changeIcon" class="source-icon">🔄</div>
+      <h2 id="changePair"></h2>
+      <p>¿Qué cambio histórico representa esta pareja?</p>
+    </article>
+    <div id="changeDestinations" class="change-grid"></div>
+    <div id="changeFeedback" class="feedback neutral">Relaciona la pareja con la explicación adecuada.</div>
+    <div class="phase-nav"><button id="nextChangeBtn" class="primary hidden">Siguiente cambio</button></div>
+  </div>
+</section>
+
+<section id="finalScreen" class="screen">
+  <div class="panel main">
+    <div class="phase-title">
+      <div style="font-size:4.4rem" aria-hidden="true">🕰️✨🏆</div>
+      <h1>¡Misión completada!</h1>
+      <p>Habéis organizado millones de años de Historia y reconstruido la línea del tiempo de la humanidad.</p>
+    </div>
+    <div id="finalClock" class="clock"></div>
+    <div id="finalReport" class="final-report"></div>
+    <div class="card" style="margin-top:16px">
+      <label for="reflection1"><strong>¿Qué acontecimiento se utiliza para marcar el paso de la Prehistoria a la Historia?</strong></label>
+      <textarea id="reflection1"></textarea>
+    </div>
+    <div class="card" style="margin-top:12px">
+      <label for="reflection2"><strong>¿En qué etapa se produjo el desarrollo de la agricultura y el sedentarismo?</strong></label>
+      <textarea id="reflection2"></textarea>
+    </div>
+    <div class="card" style="margin-top:12px">
+      <label for="reflection3"><strong>¿Por qué dividimos la Historia en etapas si los cambios fueron progresivos?</strong></label>
+      <textarea id="reflection3"></textarea>
+    </div>
+    <div class="phase-nav no-print">
+      <button id="saveReflectionsBtn" class="secondary">Guardar reflexiones</button>
+      <button id="reviewBtn" class="secondary">Revisar el archivo</button>
+      <button id="printBtn" class="primary">Imprimir o guardar como PDF</button>
+      <button id="restartBtn" class="danger">Volver a jugar</button>
+    </div>
+  </div>
+</section>
+
+<section id="reviewScreen" class="screen">
+  <div class="panel main">
+    <div class="phase-title"><h1>Revisión del gran archivo</h1><p>Consulta las etapas, sus palabras clave y las tarjetas representativas.</p></div>
+    <div id="reviewGrid" class="review-grid"></div>
+    <div class="phase-nav"><button id="backFinalBtn" class="secondary">Volver al resultado</button><button id="restartReviewBtn" class="primary">Nueva partida</button></div>
+  </div>
+</section>
+
+<footer class="no-print">Agentes 2030 · El gran archivo del tiempo</footer>
+</div>
+
+<div id="howModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="howTitle">
+  <div class="modal-card">
+    <h2 id="howTitle">Cómo se juega</h2>
+    <div class="grid2">
+      <article class="card"><h3>🖱️ Arrastra</h3><p>Arrastra la tarjeta hasta la zona que consideres correcta.</p></article>
+      <article class="card"><h3>⌨️ Selecciona</h3><p>También puedes pulsar una categoría o utilizar los botones con el teclado.</p></article>
+      <article class="card"><h3>🧩 Usa ayudas</h3><p>El modo de apoyo muestra palabras clave y reduce algunas opciones.</p></article>
+      <article class="card"><h3>↺ Revisa</h3><p>Los errores no bloquean el juego. Recibirás pistas y podrás volver a intentarlo.</p></article>
+    </div>
+    <div class="phase-nav"><button id="closeHowBtn" class="primary">Cerrar</button></div>
+  </div>
+</div>
+
+<script>
+const stageMeta={
+  paleolitico:{name:"Paleolítico",icon:"🪨",keywords:"Piedra tallada · nomadismo · caza · fuego",group:"Prehistoria"},
+  mesolitico:{name:"Mesolítico",icon:"🏹",keywords:"Transición · clima · pesca · campamentos",group:"Prehistoria"},
+  neolitico:{name:"Neolítico",icon:"🌾",keywords:"Agricultura · ganadería · poblados · cerámica",group:"Prehistoria"},
+  metales:{name:"Edad de los Metales",icon:"⚒️",keywords:"Cobre · bronce · hierro · metalurgia",group:"Prehistoria"},
+  antigua:{name:"Edad Antigua",icon:"🏛️",keywords:"Escritura · Egipto · Grecia · Roma",group:"Historia"},
+  media:{name:"Edad Media",icon:"🏰",keywords:"Castillos · monasterios · Al-Ándalus · gremios",group:"Historia"},
+  moderna:{name:"Edad Moderna",icon:"⛵",keywords:"Viajes · imprenta · monarquías · ciencia",group:"Historia"},
+  contemporanea:{name:"Edad Contemporánea",icon:"🏭",keywords:"Revoluciones · industria · guerras · globalización",group:"Historia"}
+};
+const stageOrder=["paleolitico","mesolitico","neolitico","metales","antigua","media","moderna","contemporanea"];
+
+const level1Cards=[
+{id:"l1-1",name:"Pinturas rupestres",icon:"🎨",description:"Representaciones realizadas en cuevas antes de la aparición de la escritura.",category:"Prehistoria",explanation:"Las pinturas rupestres pertenecen a la Prehistoria porque fueron realizadas antes de la escritura."},
+{id:"l1-2",name:"Piedra tallada",icon:"🪨",description:"Herramienta fabricada golpeando piedra.",category:"Prehistoria",explanation:"La piedra tallada es característica de las primeras sociedades prehistóricas."},
+{id:"l1-3",name:"Grupo de cazadores nómadas",icon:"🏹",description:"Se desplazan buscando alimentos y refugio.",category:"Prehistoria",explanation:"La vida nómada de cazadores y recolectores pertenece a la Prehistoria."},
+{id:"l1-4",name:"Primer poblado agrícola",icon:"🏘️",description:"Comunidad sedentaria dedicada a cultivar y criar animales.",category:"Prehistoria",explanation:"Los primeros poblados agrícolas aparecieron antes del uso de la escritura."},
+{id:"l1-5",name:"Vasija de cerámica",icon:"🏺",description:"Recipiente de barro utilizado para guardar alimentos.",category:"Prehistoria",explanation:"La cerámica se desarrolló en la Prehistoria, especialmente desde el Neolítico."},
+{id:"l1-6",name:"Espada de bronce",icon:"🗡️",description:"Arma elaborada con una aleación de cobre y estaño.",category:"Prehistoria",explanation:"El bronce se trabajó durante la última parte de la Prehistoria."},
+{id:"l1-7",name:"Escritura cuneiforme",icon:"📜",description:"Signos grabados sobre tablillas de arcilla.",category:"Historia",explanation:"La aparición de la escritura marca convencionalmente el inicio de la Historia."},
+{id:"l1-8",name:"Pirámide egipcia",icon:"🔺",description:"Construcción monumental de una civilización con escritura.",category:"Historia",explanation:"Las pirámides pertenecen a la Edad Antigua, ya dentro de la Historia."},
+{id:"l1-9",name:"Calzada romana",icon:"🛣️",description:"Camino construido para comunicar territorios del Imperio romano.",category:"Historia",explanation:"Las calzadas romanas pertenecen a la Edad Antigua."},
+{id:"l1-10",name:"Castillo medieval",icon:"🏰",description:"Construcción defensiva de la Edad Media.",category:"Historia",explanation:"Los castillos medievales pertenecen a una etapa de la Historia."},
+{id:"l1-11",name:"Imprenta",icon:"🖨️",description:"Sistema que permitió reproducir textos con rapidez.",category:"Historia",explanation:"La difusión de la imprenta pertenece al comienzo de la Edad Moderna."},
+{id:"l1-12",name:"Fábrica industrial",icon:"🏭",description:"Espacio con maquinaria y numerosos trabajadores.",category:"Historia",explanation:"La fábrica industrial es característica de la Edad Contemporánea."}
+];
+
+const cards=[
+{id:"p1",name:"Piedra tallada",icon:"🪨",description:"Herramienta obtenida golpeando una piedra hasta conseguir un borde cortante.",stage:"paleolitico",explanation:"Durante el Paleolítico se utilizaron principalmente herramientas de piedra tallada.",hint1:"Piensa en las primeras herramientas humanas.",hint2:"Nomadismo, caza y piedra tallada."},
+{id:"p2",name:"Vida nómada",icon:"🚶",description:"Los grupos humanos se desplazan buscando animales, frutos, agua y refugios.",stage:"paleolitico",explanation:"Las comunidades paleolíticas eran nómadas porque dependían de los recursos disponibles.",hint1:"No existen poblados permanentes.",hint2:"Es propia de los cazadores y recolectores del Paleolítico."},
+{id:"p3",name:"Dominio del fuego",icon:"🔥",description:"Permite calentarse, cocinar, iluminar y protegerse de algunos animales.",stage:"paleolitico",explanation:"El control del fuego fue uno de los avances fundamentales del Paleolítico.",hint1:"Se relaciona con las primeras sociedades cazadoras.",hint2:"Piedra tallada, cuevas y fuego."},
+{id:"p4",name:"Pinturas rupestres",icon:"🎨",description:"Representaciones realizadas en paredes y techos de algunas cuevas.",stage:"paleolitico",explanation:"Las pinturas rupestres se relacionan con las primeras manifestaciones artísticas y creencias.",hint1:"Busca una etapa vinculada a cuevas y caza.",hint2:"Son características del Paleolítico."},
+
+{id:"m1",name:"Campamentos estacionales",icon:"⛺",description:"Algunos grupos permanecen durante una parte del año en un mismo lugar.",stage:"mesolitico",explanation:"Durante el Mesolítico se desarrollaron formas de sedentarismo parcial.",hint1:"Es una etapa de transición.",hint2:"Se sitúa entre el Paleolítico y el Neolítico."},
+{id:"m2",name:"Cambios climáticos",icon:"🌤️",description:"El final de las grandes glaciaciones transforma los paisajes y los animales disponibles.",stage:"mesolitico",explanation:"Los cambios climáticos obligaron a modificar las formas de caza y aprovechamiento del medio.",hint1:"Piensa en el final de las glaciaciones.",hint2:"Mesolítico significa etapa intermedia."},
+{id:"m3",name:"Microlitos",icon:"🔹",description:"Pequeñas piezas de piedra utilizadas para fabricar flechas y herramientas compuestas.",stage:"mesolitico",explanation:"Los microlitos son característicos de muchas comunidades mesolíticas.",hint1:"Son pequeñas piezas usadas en flechas.",hint2:"Se asocian al Mesolítico."},
+{id:"m4",name:"Nuevas técnicas de pesca",icon:"🎣",description:"Se utilizan arpones, anzuelos, redes y pequeñas embarcaciones.",stage:"mesolitico",explanation:"La explotación de ríos y costas adquirió gran importancia durante el Mesolítico.",hint1:"La pesca aumenta tras los cambios climáticos.",hint2:"Campamentos estacionales y pesca: Mesolítico."},
+
+{id:"n1",name:"Agricultura",icon:"🌾",description:"Las comunidades comienzan a cultivar cereales y otras plantas.",stage:"neolitico",explanation:"La agricultura permitió producir alimentos y favoreció el sedentarismo.",hint1:"Provoca la aparición de poblados.",hint2:"Agricultura y ganadería son propias del Neolítico."},
+{id:"n2",name:"Ganadería",icon:"🐑",description:"Algunos animales son domesticados para obtener alimentos, pieles y ayuda.",stage:"neolitico",explanation:"La domesticación de animales fue una de las grandes transformaciones del Neolítico.",hint1:"Se relaciona con la domesticación.",hint2:"Agricultura, ganadería y poblados: Neolítico."},
+{id:"n3",name:"Primeros poblados",icon:"🏘️",description:"Las comunidades construyen viviendas permanentes y viven de manera sedentaria.",stage:"neolitico",explanation:"La agricultura y la ganadería favorecieron la aparición de poblados.",hint1:"La población deja de desplazarse continuamente.",hint2:"Sedentarismo y poblados: Neolítico."},
+{id:"n4",name:"Cerámica y tejido",icon:"🏺",description:"Se fabrican recipientes de barro y tejidos mediante técnicas más complejas.",stage:"neolitico",explanation:"La cerámica permitió almacenar alimentos y el tejido facilitó la producción de prendas.",hint1:"Se necesita almacenar la producción agrícola.",hint2:"Cerámica y tejido se desarrollan en el Neolítico."},
+
+{id:"m5",name:"Objetos de cobre",icon:"🟠",description:"El cobre comienza a utilizarse para fabricar herramientas, armas y adornos.",stage:"metales",explanation:"El cobre fue uno de los primeros metales trabajados.",hint1:"No es piedra: es un nuevo material.",hint2:"Cobre, bronce e hierro: Edad de los Metales."},
+{id:"m6",name:"Armas de bronce",icon:"🗡️",description:"La mezcla de cobre y estaño permite crear objetos más resistentes.",stage:"metales",explanation:"El bronce mejoró la fabricación de herramientas, armas y objetos de prestigio.",hint1:"Es una aleación de cobre y estaño.",hint2:"Pertenece a la Edad de los Metales."},
+{id:"m7",name:"Herramientas de hierro",icon:"⛏️",description:"El hierro se emplea para fabricar instrumentos de gran resistencia.",stage:"metales",explanation:"El hierro transformó las herramientas agrícolas y las armas.",hint1:"Es un metal más resistente.",hint2:"Cobre, bronce e hierro forman esta etapa."},
+{id:"m8",name:"Taller de metalurgia",icon:"⚒️",description:"Los artesanos funden y moldean metales en hornos especializados.",stage:"metales",explanation:"La metalurgia produjo una mayor especialización del trabajo y nuevos intercambios.",hint1:"Se utilizan hornos para trabajar metales.",hint2:"Metalurgia: Edad de los Metales."},
+
+{id:"a1",name:"Escritura cuneiforme",icon:"📜",description:"Los signos se graban sobre tablillas de arcilla.",stage:"antigua",explanation:"La aparición de la escritura marca convencionalmente el comienzo de la Historia.",hint1:"Es la frontera entre Prehistoria e Historia.",hint2:"Las primeras civilizaciones con escritura pertenecen a la Edad Antigua."},
+{id:"a2",name:"Pirámides de Egipto",icon:"🔺",description:"Grandes construcciones relacionadas con los faraones y las creencias religiosas.",stage:"antigua",explanation:"Egipto fue una de las grandes civilizaciones de la Edad Antigua.",hint1:"Piensa en Egipto y los faraones.",hint2:"Egipto, Grecia y Roma: Edad Antigua."},
+{id:"a3",name:"Polis griegas",icon:"🏛️",description:"Ciudades como Atenas y Esparta desarrollan diferentes formas de organización política.",stage:"antigua",explanation:"Las polis fueron una forma principal de organización del mundo griego.",hint1:"Atenas y Esparta.",hint2:"Grecia pertenece a la Edad Antigua."},
+{id:"a4",name:"Calzadas romanas",icon:"🛣️",description:"Una red de caminos comunica ciudades y territorios del Imperio romano.",stage:"antigua",explanation:"Las calzadas facilitaron los desplazamientos, el comercio y el control del Imperio.",hint1:"Se relaciona con el Imperio romano.",hint2:"Roma pertenece a la Edad Antigua."},
+
+{id:"e1",name:"Castillo feudal",icon:"🏰",description:"Construcción defensiva y residencia de algunos señores.",stage:"media",explanation:"Los castillos se relacionan con la organización política y social de buena parte de la Europa medieval.",hint1:"Piensa en señores y feudos.",hint2:"Castillos y gremios: Edad Media."},
+{id:"e2",name:"Monasterio y manuscritos",icon:"📚",description:"Los textos son copiados a mano y conservados en bibliotecas religiosas.",stage:"media",explanation:"Los monasterios tuvieron un papel importante en la conservación de textos.",hint1:"Los libros se copian a mano.",hint2:"Monasterios y manuscritos: Edad Media."},
+{id:"e3",name:"Ciudad de Al-Ándalus",icon:"🕌",description:"Espacio de comercio, artesanía, conocimiento y desarrollo cultural.",stage:"media",explanation:"Durante la Edad Media convivieron diferentes sociedades y culturas en la península ibérica.",hint1:"Se sitúa en la península ibérica medieval.",hint2:"Al-Ándalus pertenece a la Edad Media."},
+{id:"e4",name:"Gremio de artesanos",icon:"🧵",description:"Asociación formada por personas que ejercen un mismo oficio.",stage:"media",explanation:"Los gremios regulaban la formación y el trabajo artesanal en las ciudades medievales.",hint1:"Organiza oficios en ciudades.",hint2:"Gremios y castillos: Edad Media."},
+
+{id:"mo1",name:"Viajes oceánicos",icon:"⛵",description:"Las expediciones marítimas europeas abren nuevas rutas y conectan territorios.",stage:"moderna",explanation:"Los viajes oceánicos transformaron el conocimiento geográfico y las relaciones entre continentes.",hint1:"Carabelas y nuevas rutas.",hint2:"Viajes, imprenta y monarquías: Edad Moderna."},
+{id:"mo2",name:"Difusión de la imprenta",icon:"🖨️",description:"Los textos pueden reproducirse con mayor rapidez y llegar a más personas.",stage:"moderna",explanation:"La imprenta facilitó la difusión de ideas y conocimientos.",hint1:"Los libros dejan de copiarse solo a mano.",hint2:"La imprenta se difunde al inicio de la Edad Moderna."},
+{id:"mo3",name:"Monarquías modernas",icon:"👑",description:"Los reyes concentran progresivamente mayor poder político y administrativo.",stage:"moderna",explanation:"El fortalecimiento de las monarquías fue característico de la Edad Moderna.",hint1:"Concentración del poder de los reyes.",hint2:"Monarquías y viajes oceánicos: Edad Moderna."},
+{id:"mo4",name:"Revolución científica",icon:"🔭",description:"La observación, la experimentación y las matemáticas transforman la explicación de la naturaleza.",stage:"moderna",explanation:"La revolución científica modificó la forma de construir conocimientos.",hint1:"Telescopios, experimentos y matemáticas.",hint2:"Pertenece a la Edad Moderna."},
+
+{id:"c1",name:"Revolución Francesa",icon:"🇫🇷",description:"En 1789 comienza un proceso que cuestiona el Antiguo Régimen.",stage:"contemporanea",explanation:"La Revolución Francesa se utiliza convencionalmente como inicio de la Edad Contemporánea.",hint1:"Ocurre en 1789.",hint2:"1789 inicia la Edad Contemporánea."},
+{id:"c2",name:"Fábrica industrial",icon:"🏭",description:"Las máquinas y la producción concentrada transforman el trabajo y las ciudades.",stage:"contemporanea",explanation:"La industrialización produjo grandes cambios económicos, sociales y urbanos.",hint1:"Máquinas, fábricas y ciudades industriales.",hint2:"Industrialización: Edad Contemporánea."},
+{id:"c3",name:"Guerras mundiales",icon:"🌍",description:"Grandes conflictos internacionales afectan a numerosos países durante el siglo XX.",stage:"contemporanea",explanation:"Las guerras mundiales marcaron profundamente la Historia Contemporánea.",hint1:"Ocurren durante el siglo XX.",hint2:"Siglo XX: Edad Contemporánea."},
+{id:"c4",name:"Internet y globalización",icon:"🌐",description:"Las comunicaciones y las relaciones entre territorios se hacen más rápidas e intensas.",stage:"contemporanea",explanation:"El mundo actual se caracteriza por una creciente conexión global.",hint1:"Pertenece al mundo actual.",hint2:"Internet y globalización: Edad Contemporánea."}
+];
+
+const representativeIds=["p1","p2","m1","m3","n1","n3","m6","m7","a1","a4","e1","e4","mo1","mo2","c2","c4"];
+
+const intruderGroups=[
+{title:"Desafío 1",items:[
+{name:"Agricultura",stage:"neolitico"}, {name:"Ganadería",stage:"neolitico"}, {name:"Primeros poblados",stage:"neolitico"}, {name:"Máquina de vapor",stage:"contemporanea",intruder:true}
+]},
+{title:"Desafío 2",items:[
+{name:"Castillo",stage:"media"}, {name:"Gremio",stage:"media"}, {name:"Monasterio",stage:"media"}, {name:"Pirámide egipcia",stage:"antigua",intruder:true}
+]},
+{title:"Desafío 3",items:[
+{name:"Fábrica industrial",stage:"contemporanea"}, {name:"Revolución Francesa",stage:"contemporanea"}, {name:"Internet",stage:"contemporanea"}, {name:"Calzada romana",stage:"antigua",intruder:true}
+]},
+{title:"Desafío 4",items:[
+{name:"Piedra tallada",stage:"paleolitico"}, {name:"Vida nómada",stage:"paleolitico"}, {name:"Dominio del fuego",stage:"paleolitico"}, {name:"Cerámica",stage:"neolitico",intruder:true}
+]},
+{title:"Desafío 5",items:[
+{name:"Viajes oceánicos",stage:"moderna"}, {name:"Imprenta",stage:"moderna"}, {name:"Revolución científica",stage:"moderna"}, {name:"Pinturas rupestres",stage:"paleolitico",intruder:true}
+]}
+];
+
+const changes=[
+{id:"ch1",pair:"Vida nómada → primeros poblados",explanation:"Las comunidades pasaron de desplazarse continuamente a vivir de forma permanente en un lugar."},
+{id:"ch2",pair:"Piedra tallada → herramientas de hierro",explanation:"Los materiales y las técnicas de fabricación se hicieron más variados y resistentes."},
+{id:"ch3",pair:"Manuscrito → imprenta",explanation:"La reproducción de textos se hizo más rápida y permitió difundir más conocimientos."},
+{id:"ch4",pair:"Taller artesanal → fábrica industrial",explanation:"La producción pasó de pequeños talleres a espacios con maquinaria y numerosos trabajadores."},
+{id:"ch5",pair:"Calzada romana → comunicaciones digitales",explanation:"Las formas de conectar territorios y transmitir información se hicieron progresivamente más rápidas."}
+];
+
+const defaultState={
+  level:1,score:0,support:false,
+  l1Order:[],l1Index:0,l1Attempts:0,l1Done:[],l1Mistakes:{},
+  l2Order:[],l2Index:0,l2Attempts:0,l2Done:[],l2Mistakes:{},stageCompleted:{},
+  timelineOrder:[],timelineChecked:false,timelineAttempts:0,
+  repAssignments:{},repsChecked:false,
+  intruderIndex:0,intruderAttempts:0,intruderPicked:null,intruderStageDone:false,intruderCompleted:[],
+  changeOrder:[],changeIndex:0,changeAttempts:0,changeDone:[],
+  reflections:["","",""]
+};
+let state=loadState()||structuredClone(defaultState);
+let soundOn=true;
+let dragPayload=null;
+const $=id=>document.getElementById(id);
+const screens=[...document.querySelectorAll(".screen")];
+
+function saveState(){localStorage.setItem("granArchivoTiempo",JSON.stringify(state));updateStartButtons()}
+function loadState(){try{return JSON.parse(localStorage.getItem("granArchivoTiempo"))}catch(e){return null}}
+function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function showScreen(id){screens.forEach(s=>s.classList.remove("active"));$(id).classList.add("active");window.scrollTo({top:0,behavior:"smooth"})}
+function beep(kind="ok"){
+  if(!soundOn)return;
+  try{
+    const C=window.AudioContext||window.webkitAudioContext,ctx=new C(),o=ctx.createOscillator(),g=ctx.createGain();
+    o.connect(g);g.connect(ctx.destination);const n=ctx.currentTime;
+    o.frequency.value=kind==="bad"?180:kind==="finish"?660:520;
+    if(kind==="ok")o.frequency.exponentialRampToValueAtTime(760,n+.18);
+    if(kind==="bad")o.frequency.exponentialRampToValueAtTime(130,n+.22);
+    if(kind==="finish"){o.frequency.setValueAtTime(660,n);o.frequency.setValueAtTime(880,n+.14)}
+    g.gain.setValueAtTime(.09,n);g.gain.exponentialRampToValueAtTime(.001,n+.35);o.start(n);o.stop(n+.36)
+  }catch(e){}
+}
+function addScore(points){state.score=Math.min(100,state.score+points);saveState();updateTopbar()}
+function currentDisplayScore(){return Math.round(state.score)}
+function updateTopbar(){
+  $("levelLabel").textContent=Math.min(state.level,5);
+  $("scoreLabel").textContent=currentDisplayScore();
+  $("classifiedLabel").textContent=state.l1Done.length+state.l2Done.length;
+  const pct=Math.round(((Math.min(state.level,5)-1)/4)*100);
+  $("progressBar").style.width=pct+"%";$("progressPct").textContent=pct+"%";$("progressText").textContent="Nivel "+Math.min(state.level,5);
+  $("supportBtn").setAttribute("aria-pressed",String(state.support));
+  $("supportBtn").textContent=state.support?"🧩 Apoyo activado":"🧩 Modo de apoyo";
+  renderInsignias()
+}
+function renderInsignias(){
+  const data=[
+    {level:2,text:"🪨 Explorador de la Prehistoria"},
+    {level:3,text:"✍️ Guardián de la escritura"},
+    {level:4,text:"🗂️ Especialista en etapas"},
+    {level:5,text:"⏳ Detector de anacronismos"},
+    {level:6,text:"🏆 Maestro de la línea del tiempo"}
+  ];
+  $("insignias").innerHTML="";
+  data.forEach(x=>{const s=document.createElement("span");s.className="insignia "+(state.level>=x.level?"active":"");s.textContent=x.text;$("insignias").appendChild(s)})
+}
+function renderClock(targetId,forceAll=false){
+  const el=$(targetId);el.innerHTML="";
+  stageOrder.forEach(stage=>{
+    const d=document.createElement("div");d.className="clock-piece "+((forceAll||state.stageCompleted[stage])?"active":"");
+    d.innerHTML=`<span>${stageMeta[stage].icon}</span>${stageMeta[stage].name}`;
+    el.appendChild(d)
+  })
+}
+function updateStartButtons(){
+  const has=!!localStorage.getItem("granArchivoTiempo");
+  $("continueBtn").classList.toggle("hidden",!has);$("deleteBtn").classList.toggle("hidden",!has)
+}
+function beginNew(){
+  if(localStorage.getItem("granArchivoTiempo")&&!confirm("¿Quieres borrar la misión guardada y empezar de nuevo?"))return;
+  state=structuredClone(defaultState);
+  state.l1Order=shuffle(level1Cards.map(c=>c.id));
+  state.l2Order=shuffle(cards.map(c=>c.id));
+  state.changeOrder=shuffle(changes.map(c=>c.id));
+  state.timelineOrder=shuffle(stageOrder);
+  saveState();$("topbar").classList.remove("hidden");showLevel1();updateTopbar()
+}
+function continueGame(){
+  $("topbar").classList.remove("hidden");updateTopbar();
+  if(state.level===1)showLevel1();
+  else if(state.level===2)showLevel2();
+  else if(state.level===3)showLevel3();
+  else if(state.level===4)showLevel4();
+  else if(state.level===5)showLevel5();
+  else showFinal()
+}
+function resetGame(){
+  localStorage.removeItem("granArchivoTiempo");state=structuredClone(defaultState);$("topbar").classList.add("hidden");updateStartButtons();renderClock("startClock");showScreen("startScreen")
+}
+function toggleSupport(){
+  state.support=!state.support;saveState();updateTopbar();
+  $("supportStartBtn").textContent=state.support?"🧩 Modo de apoyo activado":"🧩 Activar modo de apoyo";
+  if(state.level===1)renderLevel1Card();
+  if(state.level===2)renderLevel2Card()
+}
+
+function setupDrag(el,type,id){
+  el.draggable=true;el.tabIndex=0;el.classList.add("draggable");
+  el.addEventListener("dragstart",e=>{dragPayload={type,id};el.classList.add("dragging");e.dataTransfer.setData("text/plain",JSON.stringify(dragPayload))});
+  el.addEventListener("dragend",()=>el.classList.remove("dragging"))
+}
+function setupDrop(el,handler){
+  el.addEventListener("dragover",e=>{e.preventDefault();el.classList.add("drag-over")});
+  el.addEventListener("dragleave",()=>el.classList.remove("drag-over"));
+  el.addEventListener("drop",e=>{e.preventDefault();el.classList.remove("drag-over");handler(dragPayload)})
+}
+
+function showLevel1(){
+  state.level=1;saveState();showScreen("level1Screen");updateTopbar();
+  if(!state.l1Order.length)state.l1Order=shuffle(level1Cards.map(c=>c.id));
+  renderLevel1Card()
+}
+function currentL1(){return level1Cards.find(c=>c.id===state.l1Order[state.l1Index])}
+function renderLevel1Card(){
+  const c=currentL1();if(!c){finishLevel1();return}
+  $("l1Icon").textContent=c.icon;$("l1Name").textContent=c.name;$("l1Description").textContent=c.description;
+  $("l1Card").setAttribute("aria-label",`${c.name}. ${c.description}`);
+  $("l1Destinations").innerHTML="";
+  ["Prehistoria","Historia"].forEach(cat=>{
+    const z=document.createElement("button");z.className="dropzone category-btn";z.dataset.category=cat;
+    z.innerHTML=`<span class="icon">${cat==="Prehistoria"?"🪨":"📜"}</span><strong>${cat}</strong><small>${cat==="Prehistoria"?"Antes de la escritura":"Desde la aparición de la escritura"}</small>`;
+    z.onclick=()=>classifyL1(cat);setupDrop(z,()=>classifyL1(cat));$("l1Destinations").appendChild(z)
+  });
+  $("l1Support").classList.toggle("hidden",!state.support);
+  $("l1Support").textContent=state.support?"Pista general: pregunta si esta sociedad ya utilizaba la escritura.":"";
+  $("l1Feedback").className="feedback neutral";$("l1Feedback").textContent="La aparición de la escritura es la referencia principal.";
+  $("l1NextBtn").classList.add("hidden");state.l1Attempts=0;saveState();renderL1Archive();
+  setupDrag($("l1Card"),"l1",c.id)
+}
+function classifyL1(category){
+  const c=currentL1();state.l1Attempts++;
+  if(category===c.category){
+    if(!state.l1Done.includes(c.id)){
+      state.l1Done.push(c.id);
+      const pts=state.l1Attempts===1?10/12:5/12;
+      addScore(pts)
+    }
+    $("l1Feedback").className="feedback ok";$("l1Feedback").textContent="✓ "+c.explanation;
+    $("l1NextBtn").classList.remove("hidden");beep("ok");saveState();renderL1Archive()
+  }else{
+    state.l1Mistakes[c.id]=(state.l1Mistakes[c.id]||0)+1;
+    $("l1Feedback").className="feedback bad";
+    $("l1Feedback").textContent=state.l1Attempts>=2?"↺ La aparición de la escritura marca convencionalmente el comienzo de la Historia.":"↺ Revisa: ¿esta sociedad ya utilizaba la escritura?";
+    beep("bad");saveState()
+  }
+}
+function nextL1(){state.l1Index++;saveState();renderLevel1Card()}
+function renderL1Archive(){
+  $("l1Counter").textContent=`Tarjeta ${Math.min(state.l1Index+1,12)} de 12`;
+  $("l1Archive").innerHTML="";
+  level1Cards.forEach(c=>{const d=document.createElement("div");d.className="archive-item "+(state.l1Done.includes(c.id)?"done":"");d.textContent=(state.l1Done.includes(c.id)?"✓ ":"○ ")+c.name;$("l1Archive").appendChild(d)})
+}
+function finishLevel1(){state.level=2;saveState();showLevel2()}
+
+function showLevel2(){
+  state.level=2;saveState();showScreen("level2Screen");updateTopbar();
+  if(!state.l2Order.length)state.l2Order=shuffle(cards.map(c=>c.id));
+  renderClock("clock");renderLevel2Card()
+}
+function currentL2(){return cards.find(c=>c.id===state.l2Order[state.l2Index])}
+function destinationStages(correct){
+  if(!state.support)return stageOrder;
+  return shuffle([correct,...stageOrder.filter(s=>s!==correct)]).slice(0,4)
+}
+function renderLevel2Card(){
+  const c=currentL2();if(!c){finishLevel2();return}
+  $("l2Icon").textContent=c.icon;$("l2Name").textContent=c.name;$("l2Description").textContent=c.description;
+  $("l2Card").setAttribute("aria-label",`${c.name}. ${c.description}`);
+  $("l2Destinations").innerHTML="";
+  destinationStages(c.stage).forEach(stage=>{
+    const meta=stageMeta[stage],z=document.createElement("button");z.className="dropzone category-btn";
+    z.innerHTML=`<span class="icon">${meta.icon}</span><strong>${meta.name}</strong><small>${state.support?meta.keywords:meta.group}</small>`;
+    z.onclick=()=>classifyL2(stage);setupDrop(z,()=>classifyL2(stage));$("l2Destinations").appendChild(z)
+  });
+  $("l2Support").classList.toggle("hidden",!state.support);
+  $("l2Support").textContent=state.support?`Palabras clave disponibles en cada etapa. ${c.hint1}`:"";
+  $("l2Feedback").className="feedback neutral";$("l2Feedback").textContent="Observa las palabras clave y piensa en la forma de vida de cada etapa.";
+  $("l2NextBtn").classList.add("hidden");state.l2Attempts=0;saveState();renderStageProgress();setupDrag($("l2Card"),"l2",c.id)
+}
+function classifyL2(stage){
+  const c=currentL2();state.l2Attempts++;
+  if(stage===c.stage){
+    if(!state.l2Done.includes(c.id)){
+      state.l2Done.push(c.id);
+      const pts=state.l2Attempts===1?50/32:25/32;
+      addScore(pts)
+    }
+    const completedCount=cards.filter(x=>x.stage===c.stage&&state.l2Done.includes(x.id)).length;
+    if(completedCount===4)state.stageCompleted[c.stage]=true;
+    $("l2Feedback").className="feedback ok";$("l2Feedback").textContent="✓ "+c.explanation;
+    $("l2NextBtn").classList.remove("hidden");beep("ok");saveState();renderClock("clock");renderStageProgress()
+  }else{
+    state.l2Mistakes[c.id]=(state.l2Mistakes[c.id]||0)+1;
+    $("l2Feedback").className="feedback bad";
+    $("l2Feedback").textContent=state.l2Attempts>=2?"↺ "+c.hint2:"↺ "+c.hint1;
+    beep("bad");saveState()
+  }
+}
+function nextL2(){state.l2Index++;saveState();renderLevel2Card()}
+function renderStageProgress(){
+  $("l2Counter").textContent=`Tarjeta ${Math.min(state.l2Index+1,32)} de 32`;
+  $("stageProgress").innerHTML="";
+  stageOrder.forEach(stage=>{
+    const count=cards.filter(c=>c.stage===stage&&state.l2Done.includes(c.id)).length;
+    const d=document.createElement("div");d.className="archive-item "+(count===4?"done":"");d.textContent=`${stageMeta[stage].icon} ${stageMeta[stage].name}: ${count}/4`;$("stageProgress").appendChild(d)
+  })
+}
+function finishLevel2(){state.level=3;saveState();showLevel3()}
+
+function showLevel3(){
+  state.level=3;saveState();showScreen("level3Screen");updateTopbar();
+  if(!state.timelineOrder.length)state.timelineOrder=shuffle(stageOrder);
+  renderTimeline();
+  if(state.timelineChecked)$("showRepsBtn").classList.remove("hidden");
+  if(state.repsChecked){$("representativesBlock").classList.remove("hidden");renderRepresentatives();$("toLevel4Btn").classList.remove("hidden")}
+}
+function renderTimeline(){
+  $("timelineBoard").innerHTML="";
+  state.timelineOrder.forEach((stage,idx)=>{
+    const item=document.createElement("div");item.className="timeline-item";item.draggable=true;item.dataset.stage=stage;
+    item.innerHTML=`<span class="drag-handle">↕</span><div><strong>${stageMeta[stage].icon} ${stageMeta[stage].name}</strong><br><small>${stageMeta[stage].group}</small></div>`;
+    const controls=document.createElement("div");
+    const up=document.createElement("button");up.className="small";up.textContent="↑";up.onclick=()=>moveTimeline(idx,-1);
+    const down=document.createElement("button");down.className="small";down.textContent="↓";down.onclick=()=>moveTimeline(idx,1);
+    controls.append(up,down);item.appendChild(controls);
+    item.addEventListener("dragstart",()=>{dragPayload={type:"timeline",id:stage};item.classList.add("dragging")});
+    item.addEventListener("dragend",()=>item.classList.remove("dragging"));
+    setupDrop(item,payload=>{
+      if(!payload||payload.type!=="timeline")return;
+      const a=state.timelineOrder.indexOf(payload.id),b=state.timelineOrder.indexOf(stage);
+      [state.timelineOrder[a],state.timelineOrder[b]]=[state.timelineOrder[b],state.timelineOrder[a]];
+      saveState();renderTimeline()
+    });
+    $("timelineBoard").appendChild(item)
+  })
+}
+function moveTimeline(i,d){const j=i+d;if(j<0||j>=state.timelineOrder.length)return;[state.timelineOrder[i],state.timelineOrder[j]]=[state.timelineOrder[j],state.timelineOrder[i]];saveState();renderTimeline()}
+function checkTimeline(){
+  state.timelineAttempts++;
+  const ok=state.timelineOrder.every((s,i)=>s===stageOrder[i]);
+  if(ok){
+    if(!state.timelineChecked){state.timelineChecked=true;addScore(state.timelineAttempts===1?8:5)}
+    $("timelineFeedback").className="feedback ok";$("timelineFeedback").textContent="✓ Orden correcto. La escritura separa convencionalmente Prehistoria e Historia.";
+    $("showRepsBtn").classList.remove("hidden");beep("ok");saveState()
+  }else{
+    $("timelineFeedback").className="feedback bad";$("timelineFeedback").textContent="↺ Revisa la secuencia desde las primeras sociedades cazadoras hasta el mundo actual.";beep("bad")
+  }
+}
+function showRepresentatives(){
+  $("representativesBlock").classList.remove("hidden");renderRepresentatives()
+}
+function renderRepresentatives(){
+  $("repPool").innerHTML="";$("repZones").innerHTML="";
+  representativeIds.forEach(id=>{
+    const c=cards.find(x=>x.id===id),assigned=Object.values(state.repAssignments).flat().includes(id);
+    const el=document.createElement("button");el.className="rep-card "+(assigned?"assigned":"");el.textContent=`${c.icon} ${c.name}`;
+    el.disabled=assigned;setupDrag(el,"rep",id);el.onclick=()=>{dragPayload={type:"rep",id};alert("Ahora pulsa una etapa para colocar la tarjeta.")};$("repPool").appendChild(el)
+  });
+  stageOrder.forEach(stage=>{
+    const zone=document.createElement("div");zone.className="rep-zone dropzone";zone.tabIndex=0;
+    zone.innerHTML=`<h3>${stageMeta[stage].icon} ${stageMeta[stage].name}</h3>`;
+    const assigned=state.repAssignments[stage]||[];
+    assigned.forEach(id=>{const c=cards.find(x=>x.id===id);const slot=document.createElement("div");slot.className="rep-slot";slot.textContent=`${c.icon} ${c.name}`;zone.appendChild(slot)});
+    while(zone.querySelectorAll(".rep-slot").length<2){const slot=document.createElement("div");slot.className="rep-slot";slot.textContent="Espacio libre";zone.appendChild(slot)}
+    setupDrop(zone,p=>assignRepresentative(stage,p));
+    zone.onclick=()=>{if(dragPayload&&dragPayload.type==="rep")assignRepresentative(stage,dragPayload)};
+    $("repZones").appendChild(zone)
+  })
+}
+function assignRepresentative(stage,payload){
+  if(!payload||payload.type!=="rep")return;
+  const id=payload.id;if(Object.values(state.repAssignments).flat().includes(id))return;
+  state.repAssignments[stage]=state.repAssignments[stage]||[];
+  if(state.repAssignments[stage].length>=2){alert("Esta etapa ya tiene dos tarjetas.");return}
+  state.repAssignments[stage].push(id);saveState();renderRepresentatives()
+}
+function checkRepresentatives(){
+  const allFilled=stageOrder.every(s=>(state.repAssignments[s]||[]).length===2);
+  if(!allFilled){$("repFeedback").className="feedback bad";$("repFeedback").textContent="Completa dos tarjetas en cada etapa.";return}
+  const wrong=[];
+  stageOrder.forEach(stage=>(state.repAssignments[stage]||[]).forEach(id=>{if(cards.find(c=>c.id===id).stage!==stage)wrong.push(cards.find(c=>c.id===id).name)}));
+  if(wrong.length){$("repFeedback").className="feedback bad";$("repFeedback").textContent=`↺ Revisa: ${wrong.slice(0,5).join(", ")}${wrong.length>5?"…":""}.`;beep("bad");return}
+  if(!state.repsChecked){state.repsChecked=true;addScore(7)}
+  $("repFeedback").className="feedback ok";$("repFeedback").textContent="✓ Cada etapa contiene dos huellas representativas.";$("toLevel4Btn").classList.remove("hidden");beep("ok");saveState()
+}
+
+function showLevel4(){
+  state.level=4;saveState();showScreen("level4Screen");updateTopbar();renderIntruder()
+}
+function renderIntruder(){
+  if(state.intruderIndex>=intruderGroups.length){finishLevel4();return}
+  const g=intruderGroups[state.intruderIndex];$("intruderTitle").textContent=`${g.title} · ${state.intruderIndex+1} de 5`;
+  $("intruderCards").innerHTML="";$("intruderStageArea").classList.add("hidden");$("nextIntruderBtn").classList.add("hidden");
+  $("intruderBox").textContent="Arrastra aquí el intruso temporal";state.intruderPicked=null;state.intruderStageDone=false;state.intruderAttempts=0;
+  shuffle(g.items).forEach((item,idx)=>{
+    const el=document.createElement("button");el.className="intruder-card draggable";el.textContent=item.name;
+    setupDrag(el,"intruder",item.name);el.onclick=()=>pickIntruder(item.name);$("intruderCards").appendChild(el)
+  });
+  $("intruderFeedback").className="feedback neutral";$("intruderFeedback").textContent="Tres tarjetas pertenecen a una misma etapa; una no.";
+  setupDrop($("intruderBox"),p=>{if(p&&p.type==="intruder")pickIntruder(p.id)})
+}
+function pickIntruder(name){
+  const g=intruderGroups[state.intruderIndex],item=g.items.find(i=>i.name===name);state.intruderAttempts++;
+  if(item&&item.intruder){
+    state.intruderPicked=name;$("intruderBox").textContent="✓ Intruso: "+name;$("intruderStageArea").classList.remove("hidden");renderIntruderStages(item.stage);
+    $("intruderFeedback").className="feedback ok";$("intruderFeedback").textContent="Ahora coloca el intruso en su verdadera etapa.";beep("ok");saveState()
+  }else{
+    $("intruderFeedback").className="feedback bad";$("intruderFeedback").textContent="↺ Esa tarjeta pertenece a la etapa principal del grupo. Busca la que rompe la secuencia.";beep("bad")
+  }
+}
+function renderIntruderStages(correctStage){
+  $("intruderStages").innerHTML="";
+  const options=state.support?shuffle([correctStage,...stageOrder.filter(s=>s!==correctStage)]).slice(0,4):stageOrder;
+  options.forEach(stage=>{
+    const z=document.createElement("button");z.className="dropzone category-btn";z.innerHTML=`<span class="icon">${stageMeta[stage].icon}</span><strong>${stageMeta[stage].name}</strong>`;
+    z.onclick=()=>placeIntruderStage(stage,correctStage);setupDrop(z,()=>placeIntruderStage(stage,correctStage));$("intruderStages").appendChild(z)
+  });
+  dragPayload={type:"intruder-stage",id:state.intruderPicked}
+}
+function placeIntruderStage(stage,correctStage){
+  if(stage===correctStage){
+    if(!state.intruderCompleted.includes(state.intruderIndex)){
+      state.intruderCompleted.push(state.intruderIndex);addScore(state.intruderAttempts===1?3:2)
+    }
+    state.intruderStageDone=true;$("intruderFeedback").className="feedback ok";$("intruderFeedback").textContent=`✓ ${state.intruderPicked} pertenece a ${stageMeta[stage].name}.`;
+    $("nextIntruderBtn").classList.remove("hidden");beep("ok");saveState()
+  }else{
+    $("intruderFeedback").className="feedback bad";$("intruderFeedback").textContent="↺ Has encontrado el intruso, pero revisa su verdadera etapa.";beep("bad")
+  }
+}
+function nextIntruder(){state.intruderIndex++;saveState();renderIntruder()}
+function finishLevel4(){state.level=5;saveState();showLevel5()}
+
+function showLevel5(){
+  state.level=5;saveState();showScreen("level5Screen");updateTopbar();
+  if(!state.changeOrder.length)state.changeOrder=shuffle(changes.map(c=>c.id));
+  renderChange()
+}
+function currentChange(){return changes.find(c=>c.id===state.changeOrder[state.changeIndex])}
+function renderChange(){
+  const c=currentChange();if(!c){showFinal();return}
+  $("changePair").textContent=c.pair;$("changeDestinations").innerHTML="";
+  shuffle(changes).forEach(ch=>{
+    const z=document.createElement("button");z.className="change-zone answer-btn";z.textContent=ch.explanation;
+    z.onclick=()=>classifyChange(ch.id);setupDrop(z,()=>classifyChange(ch.id));$("changeDestinations").appendChild(z)
+  });
+  $("changeFeedback").className="feedback neutral";$("changeFeedback").textContent="Relaciona la pareja con la explicación adecuada.";
+  $("nextChangeBtn").classList.add("hidden");state.changeAttempts=0;saveState();setupDrag($("changeCard"),"change",c.id)
+}
+function classifyChange(id){
+  const c=currentChange();state.changeAttempts++;
+  if(id===c.id){
+    if(!state.changeDone.includes(c.id)){state.changeDone.push(c.id);addScore(state.changeAttempts===1?2:1)}
+    $("changeFeedback").className="feedback ok";$("changeFeedback").textContent="✓ "+c.explanation;$("nextChangeBtn").classList.remove("hidden");beep("ok");saveState()
+  }else{
+    $("changeFeedback").className="feedback bad";$("changeFeedback").textContent="↺ Esa explicación describe otro cambio histórico. Compara el punto de partida y el resultado.";beep("bad")
+  }
+}
+function nextChange(){state.changeIndex++;saveState();renderChange()}
+
+function showFinal(){
+  state.level=6;saveState();showScreen("finalScreen");updateTopbar();renderClock("finalClock",true);
+  const mistakeEntries=[...Object.entries(state.l1Mistakes),...Object.entries(state.l2Mistakes)].sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const names=mistakeEntries.map(([id,n])=>{
+    const c=level1Cards.find(x=>x.id===id)||cards.find(x=>x.id===id);return c?`${c.name} (${n})`:"";
+  }).filter(Boolean);
+  $("finalReport").innerHTML=`
+    <h2>Informe de la misión temporal</h2>
+    <p><strong>Puntuación:</strong> ${currentDisplayScore()}/100</p>
+    <p><strong>Tarjetas clasificadas:</strong> ${state.l1Done.length+state.l2Done.length}/44</p>
+    <p><strong>Etapas reconstruidas:</strong> Paleolítico → Mesolítico → Neolítico → Edad de los Metales → Edad Antigua → Edad Media → Edad Moderna → Edad Contemporánea.</p>
+    <p><strong>Tarjetas que necesitaron más revisión:</strong> ${names.length?names.join(", "):"Ninguna destacada."}</p>
+    <p><strong>Idea fundamental:</strong> la aparición de la escritura se utiliza como frontera convencional entre la Prehistoria y la Historia, aunque los cambios históricos fueron progresivos.</p>
+  `;
+  state.reflections.forEach((v,i)=>$("reflection"+(i+1)).value=v||"");beep("finish")
+}
+function buildReview(){
+  $("reviewGrid").innerHTML="";
+  stageOrder.forEach(stage=>{
+    const a=document.createElement("article");a.className="card";
+    const stageCards=cards.filter(c=>c.stage===stage);
+    a.innerHTML=`<h2>${stageMeta[stage].icon} ${stageMeta[stage].name}</h2><p><strong>${stageMeta[stage].group}</strong></p><p>${stageMeta[stage].keywords}</p><ul>${stageCards.map(c=>`<li>${c.name}</li>`).join("")}</ul>`;
+    $("reviewGrid").appendChild(a)
+  })
+}
+
+function openHow(){$("howModal").classList.add("active")}
+function closeHow(){$("howModal").classList.remove("active")}
+
+$("newBtn").onclick=beginNew;
+$("continueBtn").onclick=continueGame;
+$("deleteBtn").onclick=()=>{if(confirm("¿Borrar la partida guardada?"))resetGame()};
+$("howBtn").onclick=openHow;$("howTopBtn").onclick=openHow;$("closeHowBtn").onclick=closeHow;
+$("supportStartBtn").onclick=toggleSupport;$("supportBtn").onclick=toggleSupport;
+$("soundBtn").onclick=()=>{soundOn=!soundOn;$("soundBtn").textContent=soundOn?"🔊 Sonido":"🔇 Silenciado";$("soundBtn").setAttribute("aria-pressed",String(soundOn))};
+$("l1NextBtn").onclick=nextL1;
+$("l2NextBtn").onclick=nextL2;
+$("checkTimelineBtn").onclick=checkTimeline;
+$("showRepsBtn").onclick=showRepresentatives;
+$("checkRepsBtn").onclick=checkRepresentatives;
+$("toLevel4Btn").onclick=showLevel4;
+$("nextIntruderBtn").onclick=nextIntruder;
+$("nextChangeBtn").onclick=nextChange;
+$("saveReflectionsBtn").onclick=()=>{state.reflections=[1,2,3].map(i=>$("reflection"+i).value);saveState();alert("Reflexiones guardadas en este navegador.")};
+$("reviewBtn").onclick=()=>{buildReview();showScreen("reviewScreen")};
+$("backFinalBtn").onclick=()=>showScreen("finalScreen");
+$("restartBtn").onclick=()=>{if(confirm("¿Comenzar una nueva partida?"))resetGame()};
+$("restartReviewBtn").onclick=()=>{if(confirm("¿Comenzar una nueva partida?"))resetGame()};
+$("printBtn").onclick=()=>window.print();
+$("howModal").onclick=e=>{if(e.target===$("howModal"))closeHow()};
+
+renderClock("startClock");
+updateStartButtons();
+$("supportStartBtn").textContent=state.support?"🧩 Modo de apoyo activado":"🧩 Activar modo de apoyo";
+</script>
+</body>
+</html>
